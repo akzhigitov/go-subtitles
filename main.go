@@ -33,11 +33,14 @@ func main() {
 	lemmas = loadLemmas("lemmas_60k_words.txt", 61000)
 	freqMap = parseEnglishWordsFreq("unigram_freq.csv")
 
+	knownWordsMap = parseKnownWords("knownWords.txt")
+
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
 var lemmas map[string]string
 var freqMap map[string]int
+var knownWordsMap map[string]interface{}
 
 func upload(c echo.Context) error {
 
@@ -81,12 +84,8 @@ func upload(c echo.Context) error {
 }
 
 func isKnownWord(w string) bool {
-	switch w {
-	case "I", "you":
-		return true
-	}
-
-	return false
+	_, ok := knownWordsMap[w]
+	return ok
 }
 
 type Words struct {
@@ -196,4 +195,27 @@ func parseFreq(line string) (word string, freq int) {
 	}
 
 	return fields[0], freq
+}
+
+func parseKnownWords(filepath string) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		word := scanner.Text()
+		result[word] = struct{}{}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
 }

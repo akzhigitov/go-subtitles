@@ -1,19 +1,19 @@
 <template>
   <v-app>
     <v-main>
-     <words-list/>
+      <subtitle-page></subtitle-page>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import WordsList from './components/WordsList.vue';
+import SubtitlePage from "./pages/subtitle-page.vue";
 
 export default {
-  name: 'App',
+  name: "App",
 
   components: {
-    WordsList,
+    SubtitlePage,
   },
 
   data: () => ({

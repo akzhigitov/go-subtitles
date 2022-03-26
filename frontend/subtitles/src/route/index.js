@@ -7,7 +7,7 @@ const routes = [
     {
         path: '/',
         name: 'Subtitle',
-        component: Subtitle
+        component: subtitlePage
     },
     {
         path: '/error',

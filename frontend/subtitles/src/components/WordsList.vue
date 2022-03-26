@@ -1,36 +1,38 @@
 <template>
-  <v-list subheader>
-      <v-subheader>Words</v-subheader>
-
-      <v-list-item
-        v-for="word in words"
-        :key="word.value"
-      >
-
-        <v-list-item-content>
-          <v-list-item-title v-text="word.value"></v-list-item-title>
-        </v-list-item-content>
-
-      </v-list-item>
-    </v-list>
-
+  <v-data-table :headers="headers" :items="words" class="elevation-1" :sort-by="['freq']" :items-per-page=50>
+    <template v-slot:[`item.freq`]="{ item }">
+      <v-chip :color="getColor(item.freq)" dark>
+        {{ item.freq }}
+      </v-chip>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
 export default {
-    data: () =>({
-        words:[
-            {
-                value: "missing"
-            },
-            {
-                value: "corner"
-            }
-        ]
-    })
-}
+  data() {
+    return {
+      headers: [
+        {
+          text: "Word",
+          value: "value",
+        },
+        { text: "Frequency", value: "freq" },
+      ],
+    };
+  },
+  methods: {
+    getColor(frequency) {
+      if (frequency < 200000) return "red";
+      else if (frequency < 1000000) return "orange";
+      else return "green";
+    },
+  },
+  props: {
+    words: Array,
+  },
+};
 </script>
 
 <style>
-
 </style>

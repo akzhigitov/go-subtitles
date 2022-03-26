@@ -2,11 +2,9 @@ package main
 
 import (
 	"bufio"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -54,29 +52,37 @@ func upload(c echo.Context) error {
 	}
 	defer src.Close()
 
-	b, err := ioutil.ReadAll(src)
-	if err != nil {
-		return err
+	scanner := bufio.NewScanner(src)
+
+	words := map[string]Word{}
+	phrase := ""
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) > 0 && unicode.IsLetter(rune(line[0])) {
+			phrase += line + " "
+		} else if line == "" {
+
+			for _, word := range parsePhrase(phrase) {
+				if existWord, ok := words[word.Value]; ok {
+					if len(existWord.Phrase) < len(word.Phrase) {
+						words[word.Value] = word
+					}
+				} else {
+					words[word.Value] = word
+				}
+			}
+			phrase = ""
+		}
 	}
-	words := parseText(string(b))
+
 	result := Words{}
 	for _, w := range words {
-
-		freq := freqMap[w]
-
-		if isKnownWord(w) {
-			result.KnownWords = append(result.KnownWords, Word{
-				Value: w,
-				Freq:  freq,
-			})
-		} else if freq > 0 {
-			result.UnknownWords = append(result.UnknownWords, Word{
-				Value: w,
-				Freq:  freq})
+		if isKnownWord(w.Value) {
+			result.KnownWords = append(result.KnownWords, w)
+		} else if w.Freq > 0 {
+			result.UnknownWords = append(result.UnknownWords, w)
 		} else {
-			result.BrokenWords = append(result.BrokenWords, Word{
-				Value: w,
-				Freq:  freq})
+			result.BrokenWords = append(result.BrokenWords, w)
 		}
 	}
 
@@ -95,40 +101,39 @@ type Words struct {
 }
 
 type Word struct {
-	Value string `json:"value"`
-	Freq  int    `json:"freq"`
+	Value  string `json:"value"`
+	Freq   int    `json:"freq"`
+	Phrase string `json:"phrase"`
 }
 
-func parseText(text string) []string {
-	var result []string
-	words := map[string]struct{}{}
-	for _, field := range strings.Fields(text) {
-		if unicode.IsLetter(rune(field[0])) {
-			word := trim(strings.ToLower(field))
+func parsePhrase(phrase string) []Word {
+	var result []Word
 
-			if strings.Contains(word, "'") {
-				splitted := strings.Split(word, "'")
-				word = splitted[0]
-			}
+	for _, field := range strings.Fields(phrase) {
 
-			lemma, ok := lemmas[word]
-			if !ok {
-				lemma = word
-			}
+		word := trim(strings.ToLower(field))
 
-			if _, ok := words[lemma]; !ok {
-				words[lemma] = struct{}{}
-				result = append(result, lemma)
-			}
+		if strings.Contains(word, "'") {
+			splitted := strings.Split(word, "'")
+			word = splitted[0]
 		}
+
+		lemma, ok := lemmas[word]
+		if !ok {
+			lemma = word
+		}
+		result = append(result, Word{
+			Value:  lemma,
+			Freq:   freqMap[lemma],
+			Phrase: phrase,
+		})
 	}
 
-	sort.Strings(result)
 	return result
 }
 
 func trim(word string) string {
-	return strings.ReplaceAll(strings.Trim(word, ".,!?-"), "</i>", "")
+	return strings.Trim(strings.ReplaceAll(word, "</i>", ""), ".,!?-")
 }
 
 func loadLemmas(filepath string, size int) (result map[string]string) {

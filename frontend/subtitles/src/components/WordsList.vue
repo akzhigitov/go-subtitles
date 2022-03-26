@@ -18,6 +18,7 @@ export default {
           value: "value",
         },
         { text: "Frequency", value: "freq" },
+         { text: "Phrase", value: "phrase", sortable:false },
       ],
     };
   },

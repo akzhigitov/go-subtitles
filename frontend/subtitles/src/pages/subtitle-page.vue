@@ -9,15 +9,15 @@
     ></v-file-input>
     <v-tabs>
       <v-tab>
-        <v-icon left> mdi-account </v-icon>
+        <v-icon color="red" left> mdi-book-open </v-icon>
         Unknown {{unknownWords.length}}
       </v-tab>
       <v-tab>
-        <v-icon left> mdi-lock </v-icon>
+        <v-icon color="green" left> mdi-book-open </v-icon>
           Known {{knownWords.length}}
       </v-tab>
       <v-tab>
-        <v-icon left> mdi-access-point </v-icon>
+        <v-icon left> mdi-book-open </v-icon>
        Broken {{brokenWords.length}}
       </v-tab>
 

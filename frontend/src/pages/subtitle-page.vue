@@ -37,6 +37,8 @@
         ></words-list>
       </v-tab-item>
     </v-tabs>
+
+    
   </v-container>
 </template>
 
